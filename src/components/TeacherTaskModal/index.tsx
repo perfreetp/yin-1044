@@ -47,7 +47,6 @@ const TeacherTaskModal: React.FC<TeacherTaskModalProps> = ({ visible, onClose })
 
     addTeacherTask({
       title: `${songName.trim()} 第${start}-${end}小节`,
-      songName: songName.trim(),
       startBar: start,
       endBar: end,
       barsCount: end - start + 1,

@@ -443,7 +443,11 @@ const PracticePage: React.FC = () => {
                     const barNumber = displayStartBar + bar.barIndex
                     const hasErrors = bar.errors.length > 0
                     const hasHelp = bar.helpRequested
-                    const errorTypes = [...new Set(bar.errors.map(e => e.type))]
+
+                    const wrongNoteCount = bar.errors.filter(e => e.type === 'wrongNote').length
+                    const wrongRhythmCount = bar.errors.filter(e => e.type === 'wrongRhythm').length
+                    const pauseCount = bar.errors.filter(e => e.type === 'pause').length
+                    const handSwitchCount = bar.errors.filter(e => e.type === 'handSwitch').length
 
                     return (
                       <View
@@ -451,20 +455,32 @@ const PracticePage: React.FC = () => {
                         className={`${styles.barReviewItem} ${hasErrors ? styles.hasErrors : ''} ${hasHelp ? styles.hasHelp : ''}`}
                       >
                         <Text className={styles.barNumber}>第{barNumber}小节</Text>
-                        {hasErrors ? (
+                        {(hasErrors || hasHelp) ? (
                           <View className={styles.barErrors}>
-                            {errorTypes.map((type, idx) => (
-                              <Text key={idx} className={`${styles.barErrorTag} ${styles[type]}`}>
-                                {type === 'wrongNote' ? '🎵' : type === 'wrongRhythm' ? '⏰' : type === 'pause' ? '⏸️' : '🤲'}
-                                {bar.errors.filter(e => e.type === type).length}
+                            {wrongNoteCount > 0 && (
+                              <Text className={`${styles.barErrorTag} ${styles.wrongNote}`}>
+                                🎵{wrongNoteCount}
                               </Text>
-                            ))}
+                            )}
+                            {wrongRhythmCount > 0 && (
+                              <Text className={`${styles.barErrorTag} ${styles.wrongRhythm}`}>
+                                ⏰{wrongRhythmCount}
+                              </Text>
+                            )}
+                            {pauseCount > 0 && (
+                              <Text className={`${styles.barErrorTag} ${styles.pause}`}>
+                                ⏸️{pauseCount}
+                              </Text>
+                            )}
+                            {handSwitchCount > 0 && (
+                              <Text className={`${styles.barErrorTag} ${styles.handSwitch}`}>
+                                🤲{handSwitchCount}
+                              </Text>
+                            )}
                             {hasHelp && (
                               <Text className={styles.barHelpTag}>💡求助</Text>
                             )}
                           </View>
-                        ) : hasHelp ? (
-                          <Text className={styles.barHelpTag}>💡求助过</Text>
                         ) : (
                           <Text className={styles.barPerfect}>✓ 完美</Text>
                         )}

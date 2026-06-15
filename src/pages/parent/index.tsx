@@ -25,8 +25,13 @@ const ParentPage: React.FC = () => {
   const [editType, setEditType] = useState<'childInfo' | 'textbook'>('childInfo')
   const [, forceUpdate] = useState({})
 
+  const latestResult = useMemo(() => {
+    if (practiceResults.length === 0) return null
+    return practiceResults[practiceResults.length - 1]
+  }, [practiceResults])
+
   useDidShow(() => {
-    console.log('[ParentPage] useDidShow, results count:', practiceResults.length)
+    console.log('[ParentPage] useDidShow, results count:', practiceResults.length, 'latest:', latestResult?.taskTitle)
     forceUpdate({})
   })
 
@@ -96,9 +101,6 @@ const ParentPage: React.FC = () => {
   }
 
   const maxDuration = Math.max(...stats.weeklyData.map(d => d.duration), 1)
-  const latestResult = practiceResults.length > 0
-    ? practiceResults[practiceResults.length - 1]
-    : null
 
   return (
     <ScrollView scrollY className={styles.page}>

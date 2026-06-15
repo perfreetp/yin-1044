@@ -19,8 +19,11 @@ export const mockDailyTask: PracticeTask = {
   duration: 180,
   difficulty: 2,
   barsCount: 8,
+  startBar: 1,
+  endBar: 8,
   focus: mockFocusList[0],
   isTeacherTask: true,
+  priority: 0,
   description: '四分音符为主，注意保持平稳节奏'
 }
 
@@ -32,8 +35,11 @@ export const mockTaskList: PracticeTask[] = [
     duration: 120,
     difficulty: 1,
     barsCount: 4,
+    startBar: 1,
+    endBar: 4,
     focus: mockFocusList[2],
     isTeacherTask: false,
+    priority: 999,
     description: '简单旋律，练习连贯弹奏'
   },
   {
@@ -42,8 +48,11 @@ export const mockTaskList: PracticeTask[] = [
     duration: 200,
     difficulty: 2,
     barsCount: 8,
+    startBar: 5,
+    endBar: 12,
     focus: mockFocusList[1],
     isTeacherTask: false,
+    priority: 999,
     description: '左右手交替练习'
   }
 ]
@@ -72,6 +81,7 @@ export const mockBadges: Badge[] = [
 
 export const mockPracticeResult: PracticeResult = {
   taskId: 'task_001',
+  taskTitle: '欢乐颂 第1-8小节',
   stars: 3,
   combo: 12,
   maxCombo: 15,
@@ -88,7 +98,13 @@ export const mockPracticeResult: PracticeResult = {
   helpCount: 0,
   improvedPoints: ['节奏比上次更稳了', '错音比上次少了2个'],
   encouragement: '太棒了！今天的节奏掌握得很好，继续加油哦~',
-  date: '2024-01-20'
+  date: '2024-01-20',
+  barDetails: [],
+  errorLocations: [],
+  nextPracticeSuggestion: '下次练习第3-4小节',
+  practicedBars: '1-8小节',
+  finalSpeed: 1,
+  wasReducedSection: false
 }
 
 export const mockParentStats: ParentStats = {

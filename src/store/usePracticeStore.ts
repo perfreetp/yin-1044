@@ -150,10 +150,11 @@ const generateBarDetails = (
   const barDetails: BarDetail[] = []
 
   for (let i = 0; i < totalBars; i++) {
-    const barErrors = errorLocations.filter(e => e.barIndex === i)
-    const hasHelp = helpLocations.some(h => Math.floor(h / 4) === i)
+    const allBarErrors = errorLocations.filter(e => e.barIndex === i)
+    const barErrors = allBarErrors.filter(e => e.type !== 'help')
+    const hasHelp = allBarErrors.some(e => e.type === 'help') || helpLocations.some(h => Math.floor(h / 4) === i)
     const noteCount = 4
-    const correctCount = noteCount - barErrors.filter(e => e.type !== 'help').length
+    const correctCount = noteCount - barErrors.length
 
     barDetails.push({
       barIndex: i,
@@ -368,7 +369,8 @@ export const usePracticeStore = create<PracticeState>()(
         console.log('[Practice] Section reduced:', {
           original: `${task.startBar}-${task.endBar}`,
           reduced: `${actualStartBar}-${actualEndBar}`,
-          barsCount: newBarsCount
+          barsCount: newBarsCount,
+          oldCurrent: { note: state.currentNote, bar: state.currentBar }
         })
 
         return {
@@ -376,7 +378,10 @@ export const usePracticeStore = create<PracticeState>()(
           reducedStartBar: actualStartBar,
           reducedEndBar: actualEndBar,
           originalBarsCount: task.barsCount,
-          noteTimings: newTimings
+          noteTimings: newTimings,
+          currentNote: 0,
+          currentBar: 0,
+          combo: 0
         }
       }),
 
@@ -507,32 +512,32 @@ export const usePracticeStore = create<PracticeState>()(
         const state = get()
         const child = state.childInfo
         const teacherTasks = state.teacherTasks
+        const maxDuration = 300
 
         const sortedTeacherTasks = [...teacherTasks].sort((a, b) => a.priority - b.priority)
 
-        let totalDuration = sortedTeacherTasks.reduce((sum, t) => sum + t.duration, 0)
-        const maxDuration = 300
-
         const trimmedTeacherTasks: PracticeTask[] = []
+        let accumulatedDuration = 0
+
         for (const task of sortedTeacherTasks) {
-          if (totalDuration <= maxDuration) {
+          if (accumulatedDuration + task.duration <= maxDuration) {
             trimmedTeacherTasks.push(task)
+            accumulatedDuration += task.duration
           } else {
             break
           }
         }
 
-        const remainingDuration = maxDuration - trimmedTeacherTasks.reduce((sum, t) => sum + t.duration, 0)
+        const remainingDuration = maxDuration - accumulatedDuration
 
         const normalTasks: PracticeTask[] = []
-        let currentDuration = 0
         let taskIndex = 0
 
-        while (currentDuration < remainingDuration && taskIndex < 3) {
+        while (accumulatedDuration < maxDuration && taskIndex < 3) {
           const task = generateTaskForChild(child, taskIndex, false)
-          if (currentDuration + task.duration <= remainingDuration) {
+          if (accumulatedDuration + task.duration <= maxDuration) {
             normalTasks.push(task)
-            currentDuration += task.duration
+            accumulatedDuration += task.duration
           }
           taskIndex++
         }
@@ -543,7 +548,8 @@ export const usePracticeStore = create<PracticeState>()(
           count: allTasks.length,
           teacherCount: trimmedTeacherTasks.length,
           normalCount: normalTasks.length,
-          totalDuration: allTasks.reduce((sum, t) => sum + t.duration, 0)
+          totalDuration: accumulatedDuration,
+          remaining: remainingDuration
         })
 
         set({
@@ -682,7 +688,9 @@ export const usePracticeStore = create<PracticeState>()(
         totalStars: state.totalStars,
         streakDays: state.streakDays,
         lastPracticeDate: state.lastPracticeDate,
-        dailyStats: state.dailyStats
+        dailyStats: state.dailyStats,
+        todayTasks: state.todayTasks,
+        maxCombo: state.maxCombo
       })
     }
   )

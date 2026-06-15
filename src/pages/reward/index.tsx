@@ -21,14 +21,15 @@ const RewardPage: React.FC = () => {
   const [encouragement, setEncouragement] = useState(getRandomEncouragement())
   const [, forceUpdate] = useState({})
 
+  const latestResult = useMemo(() => {
+    if (practiceResults.length === 0) return null
+    return practiceResults[practiceResults.length - 1]
+  }, [practiceResults])
+
   useDidShow(() => {
-    console.log('[RewardPage] useDidShow, results count:', practiceResults.length)
+    console.log('[RewardPage] useDidShow, results count:', practiceResults.length, 'latest:', latestResult?.taskTitle)
     forceUpdate({})
   })
-
-  const latestResult = practiceResults.length > 0
-    ? practiceResults[practiceResults.length - 1]
-    : null
 
   const stickersWithStatus = useMemo((): Sticker[] => {
     return mockStickers.map(sticker => ({
