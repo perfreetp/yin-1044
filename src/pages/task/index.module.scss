@@ -66,6 +66,69 @@
   gap: $spacing-sm;
 }
 
+.taskCount {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-normal;
+  color: $color-text-tertiary;
+  margin-left: auto;
+}
+
+.emptyState {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xxl $spacing-xl;
+  text-align: center;
+  box-shadow: $shadow-card;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: $spacing-md;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.emptyDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.footerStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-top: $spacing-lg;
+}
+
+.footerStat {
+  text-align: center;
+}
+
+.footerStatValue {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  display: block;
+  line-height: 1.2;
+  margin-bottom: 4rpx;
+}
+
+.footerStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
 .focusCard {
   background: $color-bg-card;
   border-radius: $radius-xl;

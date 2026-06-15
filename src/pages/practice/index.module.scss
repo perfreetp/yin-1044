@@ -521,3 +521,164 @@
   font-weight: $font-weight-medium;
   margin-bottom: $spacing-md;
 }
+
+.noteError .errorTip {
+  background: $color-error;
+}
+
+.rhythmError .errorTip {
+  background: $color-warning;
+}
+
+.reducedBadge {
+  position: absolute;
+  top: $spacing-md;
+  left: $spacing-md;
+  background: rgba(108, 158, 255, 0.15);
+  color: $color-secondary-blue;
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.failIndicator {
+  font-size: $font-size-xs;
+  color: $color-error;
+  font-weight: $font-weight-medium;
+}
+
+.helpCount {
+  font-size: $font-size-xs;
+  color: $color-warning;
+  font-weight: $font-weight-medium;
+  margin-left: 4rpx;
+}
+
+.errorSummary {
+  background: $color-bg-soft;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  text-align: left;
+}
+
+.errorSummaryTitle {
+  margin-bottom: $spacing-md;
+}
+
+.errorSummaryLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.errorSummaryList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.errorSummaryItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+}
+
+.errorSummaryIcon {
+  font-size: 28rpx;
+}
+
+.errorSummaryName {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.errorSummaryCount {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.mostError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: $spacing-md;
+  border-top: 1rpx dashed $color-border;
+}
+
+.mostErrorLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.mostErrorValue {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-error;
+  margin-left: $spacing-xs;
+}
+
+.independentSection {
+  margin-bottom: $spacing-lg;
+}
+
+.independentBadgeSuccess {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: $spacing-md;
+  background: rgba(82, 196, 26, 0.15);
+  color: $color-success;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+}
+
+.independentBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: $spacing-md;
+  background: rgba(250, 173, 20, 0.15);
+  color: $color-warning;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+}
+
+.resultStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.resultStat {
+  text-align: center;
+  padding: $spacing-sm;
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+
+  .statValue {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $color-primary;
+    display: block;
+    line-height: 1.2;
+    margin-bottom: 4rpx;
+  }
+
+  .statLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+  }
+}

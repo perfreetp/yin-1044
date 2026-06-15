@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import { mockDailyTask } from '@/data/mockData'
-import { formatTime, generateImprovedPoints, calculateStars, getRandomEncouragement } from '@/utils'
+import { usePracticeStore } from '@/store/usePracticeStore'
+import { formatTime, getMostErrorType } from '@/utils'
 import styles from './index.module.scss'
 
 type PracticeState = 'idle' | 'playing' | 'paused' | 'finished'
@@ -11,44 +11,77 @@ interface NotePosition {
   x: number
   y: number
   index: number
+  expectedTiming: number
 }
 
 const PracticePage: React.FC = () => {
+  const {
+    currentTask,
+    practiceStatus: storeStatus,
+    currentBar: storeCurrentBar,
+    currentNote: storeCurrentNote,
+    combo: storeCombo,
+    maxCombo: storeMaxCombo,
+    errorTypes: storeErrorTypes,
+    isIndependent: storeIsIndependent,
+    helpCount: storeHelpCount,
+    speedMultiplier,
+    consecutiveFailures,
+    isReducedSection,
+    startPractice,
+    nextNote,
+    recordError,
+    addCombo,
+    resetBar,
+    requestHelp,
+    finishPractice,
+    decreaseSpeed,
+    reduceSection,
+    resetPractice
+  } = usePracticeStore()
+
   const [practiceState, setPracticeState] = useState<PracticeState>('idle')
-  const [currentNoteIndex, setCurrentNoteIndex] = useState(0)
-  const [combo, setCombo] = useState(0)
-  const [maxCombo, setMaxCombo] = useState(0)
-  const [errorCount, setErrorCount] = useState(0)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [showErrorTip, setShowErrorTip] = useState(false)
   const [errorTipText, setErrorTipText] = useState('')
+  const [errorTipType, setErrorTipType] = useState<'wrongNote' | 'wrongRhythm' | null>(null)
   const [showComboTip, setShowComboTip] = useState(false)
   const [comboTipText, setComboTipText] = useState('')
-  const [speedMultiplier, setSpeedMultiplier] = useState(1)
-  const [consecutiveFailures, setConsecutiveFailures] = useState(0)
   const [parentMode, setParentMode] = useState(false)
-  const [helpCount, setHelpCount] = useState(0)
+  const [lastErrorNoteIndex, setLastErrorNoteIndex] = useState(-1)
 
   const [resultStars, setResultStars] = useState(0)
   const [resultAccuracy, setResultAccuracy] = useState(0)
+  const [resultRhythmAccuracy, setResultRhythmAccuracy] = useState(0)
   const [resultImproved, setResultImproved] = useState<string[]>([])
   const [resultEncouragement, setResultEncouragement] = useState('')
+  const [resultMostError, setResultMostError] = useState('')
+  const [resultIsIndependent, setResultIsIndependent] = useState(true)
+  const [resultHelpCount, setResultHelpCount] = useState(0)
 
   const timerRef = useRef<number | null>(null)
-  const totalNotes = 32
 
+  const task = currentTask
+  const totalNotes = task ? task.barsCount * 4 : 32
   const notes: NotePosition[] = []
   for (let i = 0; i < totalNotes; i++) {
     notes.push({
       x: 60 + i * 22,
       y: 40 + Math.sin(i * 0.8) * 30,
-      index: i
+      index: i,
+      expectedTiming: i * (600 / speedMultiplier)
     })
   }
 
+  const currentNoteIndex = storeCurrentNote
   const currentBar = Math.floor(currentNoteIndex / 4) + 1
-  const totalBars = mockDailyTask.barsCount
+  const totalBars = task ? task.barsCount : 8
   const progress = (currentNoteIndex / totalNotes) * 100
+  const combo = storeCombo
+  const maxCombo = storeMaxCombo
+  const errorTypes = storeErrorTypes
+  const isIndependent = storeIsIndependent
+  const helpCount = storeHelpCount
 
   useEffect(() => {
     return () => {
@@ -58,28 +91,25 @@ const PracticePage: React.FC = () => {
     }
   }, [])
 
-  const startPractice = useCallback(() => {
+  const doStartPractice = useCallback(() => {
+    startPractice()
     setPracticeState('playing')
-    setCurrentNoteIndex(0)
-    setCombo(0)
-    setMaxCombo(0)
-    setErrorCount(0)
     setElapsedTime(0)
-    setConsecutiveFailures(0)
+    setLastErrorNoteIndex(-1)
 
     timerRef.current = setInterval(() => {
       setElapsedTime(prev => prev + 1)
     }, 1000) as unknown as number
-  }, [])
+
+    console.log('[Practice] Started:', task?.title)
+  }, [startPractice, task])
 
   const handleNoteTap = (noteIndex: number) => {
     if (practiceState !== 'playing') return
 
     if (noteIndex === currentNoteIndex) {
       const newCombo = combo + 1
-      setCombo(newCombo)
-      setMaxCombo(prev => Math.max(prev, newCombo))
-      setConsecutiveFailures(0)
+      addCombo()
 
       if (newCombo > 0 && newCombo % 5 === 0) {
         setComboTipText(`${newCombo}连击!`)
@@ -88,45 +118,75 @@ const PracticePage: React.FC = () => {
       }
 
       if (currentNoteIndex < totalNotes - 1) {
-        setCurrentNoteIndex(prev => prev + 1)
+        nextNote()
       } else {
-        finishPractice()
+        doFinishPractice()
       }
     } else if (noteIndex > currentNoteIndex) {
       handleError('wrongNote', '弹错啦~')
+    } else {
+      handleError('wrongRhythm', '节奏快了~')
     }
   }
 
-  const handleError = (type: string, message: string) => {
-    setErrorCount(prev => prev + 1)
-    setCombo(0)
-    setConsecutiveFailures(prev => prev + 1)
+  const handleError = (type: 'wrongNote' | 'wrongRhythm', message: string) => {
+    const newConsecutiveFailures = consecutiveFailures + 1
+    const newSpeed = Math.max(0.5, speedMultiplier - 0.1)
+
+    recordError(type)
+    setLastErrorNoteIndex(currentNoteIndex)
+    setErrorTipType(type)
     setErrorTipText(message)
     setShowErrorTip(true)
 
-    setTimeout(() => setShowErrorTip(false), 1500)
+    setTimeout(() => {
+      setShowErrorTip(false)
+      setErrorTipType(null)
+    }, 1500)
 
-    if (consecutiveFailures >= 4 && speedMultiplier > 0.5) {
-      setSpeedMultiplier(prev => Math.max(0.5, prev - 0.1))
+    console.log('[Practice] Error:', {
+      type,
+      message,
+      consecutiveFailures: newConsecutiveFailures,
+      currentSpeed: speedMultiplier
+    })
+
+    if (newConsecutiveFailures >= 3 && speedMultiplier > 0.5) {
+      decreaseSpeed()
       Taro.showToast({
-        title: '已降速，慢慢来~',
-        icon: 'none'
+        title: `已降速到${Math.round(newSpeed * 100)}%，慢慢来~`,
+        icon: 'none',
+        duration: 2000
       })
-      setConsecutiveFailures(0)
+    }
+
+    if (newConsecutiveFailures >= 5 && !isReducedSection) {
+      reduceSection()
+      Taro.showToast({
+        title: '已缩短练习段落',
+        icon: 'none',
+        duration: 2000
+      })
     }
   }
 
-  const resetBar = () => {
+  const doResetBar = () => {
     if (practiceState !== 'playing') return
-    const newIndex = Math.max(0, Math.floor(currentNoteIndex / 4) * 4 - 4)
-    setCurrentNoteIndex(newIndex)
-    setCombo(0)
+
+    const resetFrom = lastErrorNoteIndex >= 0 ? lastErrorNoteIndex : currentNoteIndex
+    resetBar(resetFrom)
+    console.log('[Practice] Reset bar from:', resetFrom)
+
+    Taro.showToast({
+      title: '重新开始这两小节',
+      icon: 'none'
+    })
   }
 
-  const requestHelp = () => {
-    setHelpCount(prev => prev + 1)
+  const doRequestHelp = () => {
+    requestHelp()
     Taro.showToast({
-      title: '提示：看清楚下一个音',
+      title: '提示：看清楚下一个音的位置',
       icon: 'none',
       duration: 2000
     })
@@ -142,25 +202,36 @@ const PracticePage: React.FC = () => {
     }
   }
 
-  const finishPractice = () => {
+  const doFinishPractice = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current)
     }
+
+    const result = finishPractice(elapsedTime)
     setPracticeState('finished')
 
-    const accuracy = Math.round(((totalNotes - errorCount) / totalNotes) * 100)
-    const rhythmAccuracy = Math.max(0, 100 - 2 * 5)
-    const stars = calculateStars(accuracy, rhythmAccuracy, maxCombo)
-    const improved = generateImprovedPoints(accuracy, maxCombo)
-    const encouragement = getRandomEncouragement()
+    setResultStars(result.stars)
+    setResultAccuracy(result.accuracy)
+    setResultRhythmAccuracy(result.rhythmAccuracy)
+    setResultImproved(result.improvedPoints)
+    setResultEncouragement(result.encouragement)
+    setResultMostError(getMostErrorType(result.errorTypes))
+    setResultIsIndependent(result.isIndependent)
+    setResultHelpCount(result.helpCount)
 
-    setResultStars(stars)
-    setResultAccuracy(accuracy)
-    setResultImproved(improved)
-    setResultEncouragement(encouragement)
+    console.log('[Practice] Finished with real data:', {
+      accuracy: result.accuracy,
+      rhythmAccuracy: result.rhythmAccuracy,
+      stars: result.stars,
+      maxCombo: result.maxCombo,
+      errorTypes: result.errorTypes,
+      isIndependent: result.isIndependent,
+      helpCount: result.helpCount,
+      mostError: getMostErrorType(result.errorTypes)
+    })
   }
 
-  const pausePractice = () => {
+  const doPausePractice = () => {
     if (practiceState === 'playing') {
       setPracticeState('paused')
       if (timerRef.current) {
@@ -174,29 +245,31 @@ const PracticePage: React.FC = () => {
     }
   }
 
-  const restartPractice = () => {
-    startPractice()
+  const doRestartPractice = () => {
+    doStartPractice()
   }
 
   const goBack = () => {
+    resetPractice()
     Taro.navigateBack()
   }
 
   const goToReward = () => {
+    resetPractice()
     Taro.switchTab({
       url: '/pages/reward/index'
     })
   }
 
-  if (practiceState === 'idle') {
+  if (practiceState === 'idle' || !task) {
     return (
       <View className={styles.page}>
         <View className={styles.idleSection}>
-          <Text className={styles.bigIcon}>{mockDailyTask.focus.icon}</Text>
-          <Text className={styles.idleTitle}>{mockDailyTask.title}</Text>
+          <Text className={styles.bigIcon}>{task?.focus.icon || '🎹'}</Text>
+          <Text className={styles.idleTitle}>{task?.title || '准备开始练习'}</Text>
           <Text className={styles.idleDesc}>
-            {mockDailyTask.focus.description}{'\n'}
-            共 {totalBars} 小节，约 {Math.round(mockDailyTask.duration / 60)} 分钟
+            {task?.focus.description || '准备好了吗？'}{'\n'}
+            共 {totalBars} 小节，约 {Math.round((task?.duration || 180) / 60)} 分钟
           </Text>
 
           {parentMode && (
@@ -206,7 +279,7 @@ const PracticePage: React.FC = () => {
             </View>
           )}
 
-          <View className={styles.startBigBtn} onClick={startPractice}>
+          <View className={styles.startBigBtn} onClick={doStartPractice}>
             <Text className={styles.startText}>开始</Text>
           </View>
 
@@ -230,9 +303,9 @@ const PracticePage: React.FC = () => {
       <View className={styles.page}>
         <View className={styles.finishSection}>
           <View className={styles.resultCard}>
-            <Text className={styles.resultTitle}>
+            <View className={styles.resultTitle}>
               🎉 练习完成！
-            </Text>
+            </View>
 
             <View className={styles.starsBig}>
               {[1, 2, 3].map(i => (
@@ -251,6 +324,10 @@ const PracticePage: React.FC = () => {
                 <Text className={styles.statLabel}>准确率</Text>
               </View>
               <View className={styles.resultStat}>
+                <Text className={styles.statValue}>{resultRhythmAccuracy}%</Text>
+                <Text className={styles.statLabel}>节奏准确率</Text>
+              </View>
+              <View className={styles.resultStat}>
                 <Text className={styles.statValue}>{maxCombo}</Text>
                 <Text className={styles.statLabel}>最高连击</Text>
               </View>
@@ -258,6 +335,50 @@ const PracticePage: React.FC = () => {
                 <Text className={styles.statValue}>{formatTime(elapsedTime)}</Text>
                 <Text className={styles.statLabel}>用时</Text>
               </View>
+            </View>
+
+            <View className={styles.errorSummary}>
+              <View className={styles.errorSummaryTitle}>
+                <Text className={styles.errorSummaryLabel}>错误统计</Text>
+              </View>
+              <View className={styles.errorSummaryList}>
+                <View className={styles.errorSummaryItem}>
+                  <Text className={styles.errorSummaryIcon}>🎵</Text>
+                  <Text className={styles.errorSummaryName}>错音</Text>
+                  <Text className={styles.errorSummaryCount}>{errorTypes.wrongNote}次</Text>
+                </View>
+                <View className={styles.errorSummaryItem}>
+                  <Text className={styles.errorSummaryIcon}>⏰</Text>
+                  <Text className={styles.errorSummaryName}>节拍不准</Text>
+                  <Text className={styles.errorSummaryCount}>{errorTypes.wrongRhythm}次</Text>
+                </View>
+                <View className={styles.errorSummaryItem}>
+                  <Text className={styles.errorSummaryIcon}>⏸️</Text>
+                  <Text className={styles.errorSummaryName}>停顿</Text>
+                  <Text className={styles.errorSummaryCount}>{errorTypes.pause}次</Text>
+                </View>
+                <View className={styles.errorSummaryItem}>
+                  <Text className={styles.errorSummaryIcon}>🤲</Text>
+                  <Text className={styles.errorSummaryName}>换手不顺</Text>
+                  <Text className={styles.errorSummaryCount}>{errorTypes.handSwitch}次</Text>
+                </View>
+              </View>
+              <View className={styles.mostError}>
+                <Text className={styles.mostErrorLabel}>最多错误：</Text>
+                <Text className={styles.mostErrorValue}>{resultMostError}</Text>
+              </View>
+            </View>
+
+            <View className={styles.independentSection}>
+              {resultIsIndependent ? (
+                <View className={styles.independentBadgeSuccess}>
+                  <Text>✓ 独立完成！太棒了！</Text>
+                </View>
+              ) : (
+                <View className={styles.independentBadge}>
+                  <Text>求助了 {resultHelpCount} 次，下次加油！</Text>
+                </View>
+              )}
             </View>
 
             <View className={styles.improvedSection}>
@@ -280,7 +401,7 @@ const PracticePage: React.FC = () => {
           </View>
 
           <View className={styles.mainButtons} style={{ width: '100%' }}>
-            <View className={`${styles.btn} ${styles.btnSecondary}`} onClick={restartPractice}>
+            <View className={`${styles.btn} ${styles.btnSecondary}`} onClick={doRestartPractice}>
               <Text>再来一次</Text>
             </View>
             <View className={`${styles.btn} ${styles.btnPrimary}`} onClick={goToReward}>
@@ -296,7 +417,7 @@ const PracticePage: React.FC = () => {
     <View className={styles.page}>
       <View className={styles.header}>
         <View className={styles.taskInfo}>
-          <Text className={styles.taskTitle}>{mockDailyTask.title}</Text>
+          <Text className={styles.taskTitle}>{task.title}</Text>
           <Text className={styles.taskMeta}>第 {currentBar} / {totalBars} 小节</Text>
         </View>
         <View className={styles.comboDisplay}>
@@ -310,8 +431,8 @@ const PracticePage: React.FC = () => {
 
       <View className={styles.staffSection}>
         <View className={styles.focusTip}>
-          <Text className={styles.focusIcon}>{mockDailyTask.focus.icon}</Text>
-          <Text className={styles.focusText}>{mockDailyTask.focus.description}</Text>
+          <Text className={styles.focusIcon}>{task.focus.icon}</Text>
+          <Text className={styles.focusText}>{task.focus.description}</Text>
         </View>
 
         {parentMode && (
@@ -324,12 +445,18 @@ const PracticePage: React.FC = () => {
         <View className={styles.staffContainer}>
           {speedMultiplier < 1 && (
             <View className={styles.speedBadge}>
-              {Math.round(speedMultiplier * 100)}% 速度
+              🔽 已降速 {Math.round(speedMultiplier * 100)}%
+            </View>
+          )}
+
+          {isReducedSection && (
+            <View className={styles.reducedBadge}>
+              ✂️ 已缩短段落
             </View>
           )}
 
           {showErrorTip && (
-            <View className={styles.errorTip}>
+            <View className={`${styles.errorTip} ${errorTipType === 'wrongRhythm' ? styles.rhythmError : styles.noteError}`}>
               <Text>{errorTipText}</Text>
             </View>
           )}
@@ -349,6 +476,7 @@ const PracticePage: React.FC = () => {
                     ${styles.note}
                     ${note.index === currentNoteIndex ? styles.current : ''}
                     ${note.index < currentNoteIndex ? styles.correct : ''}
+                    ${note.index === lastErrorNoteIndex ? styles.wrong : ''}
                   `}
                   style={{
                     left: `${note.x}rpx`,
@@ -366,6 +494,9 @@ const PracticePage: React.FC = () => {
 
           <View className={styles.barIndicator}>
             进度：{Math.round(progress)}%
+            {consecutiveFailures > 0 && (
+              <Text className={styles.failIndicator}> · 连续{consecutiveFailures}次失误</Text>
+            )}
           </View>
         </View>
       </View>
@@ -374,10 +505,10 @@ const PracticePage: React.FC = () => {
         <View className={styles.mainButtons}>
           {practiceState === 'playing' ? (
             <>
-              <View className={`${styles.btn} ${styles.btnSecondary}`} onClick={pausePractice}>
+              <View className={`${styles.btn} ${styles.btnSecondary}`} onClick={doPausePractice}>
                 <Text>⏸ 暂停</Text>
               </View>
-              <View className={`${styles.btn} ${styles.btnPrimary}`} onClick={resetBar}>
+              <View className={`${styles.btn} ${styles.btnPrimary}`} onClick={doResetBar}>
                 <Text>↩ 重来两小节</Text>
               </View>
             </>
@@ -386,7 +517,7 @@ const PracticePage: React.FC = () => {
               <View className={`${styles.btn} ${styles.btnSecondary}`} onClick={goBack}>
                 <Text>退出</Text>
               </View>
-              <View className={`${styles.btn} ${styles.btnSuccess}`} onClick={pausePractice}>
+              <View className={`${styles.btn} ${styles.btnSuccess}`} onClick={doPausePractice}>
                 <Text>▶ 继续</Text>
               </View>
             </>
@@ -394,15 +525,16 @@ const PracticePage: React.FC = () => {
         </View>
 
         <View className={styles.secondaryButtons}>
-          <View className={styles.smallBtn} onClick={requestHelp}>
+          <View className={styles.smallBtn} onClick={doRequestHelp}>
             <Text className={styles.btnIcon}>💡</Text>
             <Text>求助提示</Text>
+            {helpCount > 0 && <Text className={styles.helpCount}>({helpCount})</Text>}
           </View>
           <View className={styles.smallBtn} onClick={toggleParentMode}>
             <Text className={styles.btnIcon}>👨‍👩‍👧</Text>
             <Text>{parentMode ? '关闭亲子' : '亲子模式'}</Text>
           </View>
-          <View className={styles.smallBtn} onClick={restartPractice}>
+          <View className={styles.smallBtn} onClick={doRestartPractice}>
             <Text className={styles.btnIcon}>🔄</Text>
             <Text>重新开始</Text>
           </View>

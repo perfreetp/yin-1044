@@ -201,6 +201,73 @@
   color: $color-text-secondary;
 }
 
+.weekDayStars {
+  font-size: $font-size-xs;
+  margin-top: 2rpx;
+}
+
+.latestRecord {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+  border-left: 8rpx solid $color-primary;
+}
+
+.latestTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.latestDate {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-normal;
+}
+
+.latestStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-sm;
+}
+
+.latestStat {
+  text-align: center;
+  padding: $spacing-sm;
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+}
+
+.latestStatValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  display: block;
+  line-height: 1.2;
+  margin-bottom: 4rpx;
+}
+
+.latestStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.encourageHint {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  display: block;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx dashed $color-border;
+  font-style: italic;
+}
+
 .errorCard {
   background: $color-bg-card;
   border-radius: $radius-xl;

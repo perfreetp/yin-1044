@@ -172,6 +172,103 @@
   line-height: 1.6;
 }
 
+.encouragementHint {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+  display: block;
+  opacity: 0.7;
+}
+
+.latestRecordCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+  border-left: 8rpx solid $color-reward;
+}
+
+.latestRecordHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.latestRecordTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.latestRecordDate {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.latestRecordStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-sm;
+}
+
+.latestRecordStat {
+  text-align: center;
+  padding: $spacing-sm;
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+}
+
+.latestRecordStatValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-reward;
+  display: block;
+  line-height: 1.2;
+  margin-bottom: 4rpx;
+}
+
+.latestRecordStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.achievementGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.achievementItem {
+  text-align: center;
+}
+
+.achievementIcon {
+  font-size: 40rpx;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.achievementValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  display: block;
+  line-height: 1.2;
+  margin-bottom: 4rpx;
+}
+
+.achievementLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
 .progressCard {
   background: $color-bg-card;
   border-radius: $radius-xl;
