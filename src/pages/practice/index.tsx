@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { usePracticeStore } from '@/store/usePracticeStore'
-import { formatTime, getMostErrorType, getErrorTypeName } from '@/utils'
-import type { BarDetail, ErrorLocation, PracticeResult } from '@/types'
+import { formatTime, getMostErrorType } from '@/utils'
+import type { BarDetail } from '@/types'
 import styles from './index.module.scss'
 
 type PracticeState = 'idle' | 'playing' | 'paused' | 'finished'
@@ -108,10 +108,15 @@ const PracticePage: React.FC = () => {
     return result
   }, [totalNotes, noteTimings, speedMultiplier])
 
-  const currentNoteIndex = storeCurrentNote
-  const currentBar = displayStartBar + Math.floor(currentNoteIndex / 4)
+  const safeCurrentNoteIndex = Math.min(storeCurrentNote, Math.max(0, totalNotes - 1))
+  const relativeBarIndex = Math.floor(safeCurrentNoteIndex / 4)
+  const currentBar = isReducedSection
+    ? Math.min(relativeBarIndex + 1, totalBars)
+    : displayStartBar + relativeBarIndex
   const totalBars = effectiveBarsCount
-  const progress = (currentNoteIndex / totalNotes) * 100
+  const progress = totalNotes > 0
+    ? Math.min(100, (safeCurrentNoteIndex / totalNotes) * 100)
+    : 0
   const combo = storeCombo
   const maxCombo = storeMaxCombo
   const errorTypes = storeErrorTypes
@@ -142,7 +147,7 @@ const PracticePage: React.FC = () => {
   const handleNoteTap = (noteIndex: number) => {
     if (practiceState !== 'playing') return
 
-    if (noteIndex === currentNoteIndex) {
+    if (noteIndex === safeCurrentNoteIndex) {
       const newCombo = combo + 1
       addCombo()
 
@@ -152,12 +157,12 @@ const PracticePage: React.FC = () => {
         setTimeout(() => setShowComboTip(false), 800)
       }
 
-      if (currentNoteIndex < totalNotes - 1) {
+      if (safeCurrentNoteIndex < totalNotes - 1) {
         nextNote()
       } else {
         doFinishPractice()
       }
-    } else if (noteIndex > currentNoteIndex) {
+    } else if (noteIndex > safeCurrentNoteIndex) {
       handleError('wrongNote', '弹错啦~')
     } else {
       handleError('wrongRhythm', '节奏快了~')
@@ -167,10 +172,10 @@ const PracticePage: React.FC = () => {
   const handleError = (type: 'wrongNote' | 'wrongRhythm', message: string) => {
     const newConsecutiveFailures = consecutiveFailures + 1
     const newSpeed = Math.max(0.5, speedMultiplier - 0.1)
-    const barIndex = Math.floor(currentNoteIndex / 4)
+    const barIndex = Math.floor(safeCurrentNoteIndex / 4)
 
-    recordError(type, currentNoteIndex, barIndex)
-    setLastErrorNoteIndex(currentNoteIndex)
+    recordError(type, safeCurrentNoteIndex, barIndex)
+    setLastErrorNoteIndex(safeCurrentNoteIndex)
     setErrorTipType(type)
     setErrorTipText(message)
     setShowErrorTip(true)
@@ -183,7 +188,7 @@ const PracticePage: React.FC = () => {
     console.log('[Practice] Error:', {
       type,
       message,
-      noteIndex: currentNoteIndex,
+      noteIndex: safeCurrentNoteIndex,
       barIndex,
       consecutiveFailures: newConsecutiveFailures,
       currentSpeed: speedMultiplier
@@ -211,7 +216,7 @@ const PracticePage: React.FC = () => {
   const doResetBar = () => {
     if (practiceState !== 'playing') return
 
-    const resetFrom = lastErrorNoteIndex >= 0 ? lastErrorNoteIndex : currentNoteIndex
+    const resetFrom = lastErrorNoteIndex >= 0 ? lastErrorNoteIndex : safeCurrentNoteIndex
     resetBar(resetFrom)
     console.log('[Practice] Reset bar from:', resetFrom)
 
@@ -222,7 +227,7 @@ const PracticePage: React.FC = () => {
   }
 
   const doRequestHelp = () => {
-    requestHelp(currentNoteIndex)
+    requestHelp(safeCurrentNoteIndex)
     Taro.showToast({
       title: '提示：看清楚下一个音的位置',
       icon: 'none',
@@ -606,8 +611,8 @@ const PracticePage: React.FC = () => {
                   key={note.index}
                   className={`
                     ${styles.note}
-                    ${note.index === currentNoteIndex ? styles.current : ''}
-                    ${note.index < currentNoteIndex ? styles.correct : ''}
+                    ${note.index === safeCurrentNoteIndex ? styles.current : ''}
+                    ${note.index < safeCurrentNoteIndex ? styles.correct : ''}
                     ${note.index === lastErrorNoteIndex ? styles.wrong : ''}
                   `}
                   style={{

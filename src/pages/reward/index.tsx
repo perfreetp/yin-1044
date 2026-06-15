@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
-import Taro, { useDidShow } from '@tarojs/taro'
+import { useDidShow } from '@tarojs/taro'
 import StickerCard from '@/components/StickerCard'
 import BadgeCard from '@/components/BadgeCard'
 import { usePracticeStore } from '@/store/usePracticeStore'

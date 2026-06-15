@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { usePracticeStore } from '@/store/usePracticeStore'
-import type { PracticeTask } from '@/types'
-import { textbookOptions } from '@/data/mockData'
 import styles from './index.module.scss'
 
 interface TeacherTaskModalProps {

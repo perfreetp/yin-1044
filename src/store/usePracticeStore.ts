@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import Taro from '@tarojs/taro'
 import type { ChildInfo, PracticeTask, PracticeResult, PracticeStatus, ErrorTypeStats, DailyStats, ErrorLocation, BarDetail } from '@/types'
-import { mockChildInfo, mockFocusList, textbookOptions } from '@/data/mockData'
+import { mockChildInfo, mockFocusList } from '@/data/mockData'
 import { calculateStars, generateImprovedPoints, getRandomEncouragement, getMostErrorType, getErrorTypeName } from '@/utils'
 
 interface PracticeState {
@@ -558,7 +558,7 @@ export const usePracticeStore = create<PracticeState>()(
         })
       },
 
-      addTeacherTask: (task) => set((state) => {
+      addTeacherTask: (task: Partial<PracticeTask>) => set((state) => {
         const child = state.childInfo
         const priority = state.teacherTasks.length
         const focus = mockFocusList[priority % mockFocusList.length]
@@ -567,7 +567,7 @@ export const usePracticeStore = create<PracticeState>()(
 
         const newTask: PracticeTask = {
           id: `teacher_${Date.now()}`,
-          title: task.title || `${task.songName || '新曲目'} 第${startBar}-${endBar}小节`,
+          title: task.title || `新曲目 第${startBar}-${endBar}小节`,
           duration: task.duration || 90,
           difficulty: task.difficulty || Math.round((child.age / 6 + child.studyYears + 1) / 2),
           barsCount: task.barsCount || (endBar - startBar + 1),
