@@ -548,6 +548,159 @@
   font-weight: $font-weight-medium;
 }
 
+.practiceInfoBar {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+  padding: $spacing-md;
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+}
+
+.practiceInfoItem {
+  flex: 1;
+  text-align: center;
+}
+
+.practiceInfoLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.practiceInfoValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.barReviewSection {
+  margin-bottom: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.barReviewGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-sm;
+}
+
+.barReviewItem {
+  background: $color-bg-soft;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border-left: 4rpx solid $color-success;
+
+  &.hasErrors {
+    border-left-color: $color-error;
+    background: rgba(255, 82, 82, 0.05);
+  }
+
+  &.hasHelp {
+    border-left-color: $color-warning;
+  }
+}
+
+.barNumber {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.barErrors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4rpx;
+}
+
+.barErrorTag {
+  font-size: 20rpx;
+  padding: 2rpx 8rpx;
+  border-radius: $radius-xs;
+  background: rgba(255, 82, 82, 0.1);
+  color: $color-error;
+
+  &.wrongNote {
+    background: rgba(255, 82, 82, 0.1);
+    color: $color-error;
+  }
+
+  &.wrongRhythm {
+    background: rgba(255, 159, 67, 0.1);
+    color: $color-warning;
+  }
+
+  &.pause {
+    background: rgba(108, 158, 255, 0.1);
+    color: $color-secondary-blue;
+  }
+
+  &.handSwitch {
+    background: rgba(78, 205, 196, 0.1);
+    color: $color-secondary-mint;
+  }
+}
+
+.barHelpTag {
+  font-size: 20rpx;
+  padding: 2rpx 8rpx;
+  border-radius: $radius-xs;
+  background: rgba(255, 159, 67, 0.1);
+  color: $color-warning;
+}
+
+.barPerfect {
+  font-size: $font-size-xs;
+  color: $color-success;
+  font-weight: $font-weight-medium;
+}
+
+.suggestionSection {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  background: rgba(255, 159, 67, 0.1);
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-lg;
+  border-left: 6rpx solid $color-primary;
+}
+
+.suggestionIcon {
+  font-size: 48rpx;
+  flex-shrink: 0;
+}
+
+.suggestionContent {
+  flex: 1;
+}
+
+.suggestionLabel {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.suggestionText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.5;
+}
+
 .helpCount {
   font-size: $font-size-xs;
   color: $color-warning;

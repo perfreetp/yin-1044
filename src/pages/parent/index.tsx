@@ -5,6 +5,7 @@ import { usePracticeStore } from '@/store/usePracticeStore'
 import { encouragementList } from '@/data/mockData'
 import { formatDuration, getRandomEncouragement, getErrorTypeName } from '@/utils'
 import EditProfileModal from '@/components/EditProfileModal'
+import TeacherTaskModal from '@/components/TeacherTaskModal'
 import type { ChildInfo } from '@/types'
 import styles from './index.module.scss'
 
@@ -12,6 +13,7 @@ const ParentPage: React.FC = () => {
   const {
     childInfo,
     practiceResults,
+    teacherTasks,
     updateChildInfo,
     getParentStats,
     totalStars
@@ -19,6 +21,7 @@ const ParentPage: React.FC = () => {
 
   const [encouragement, setEncouragement] = useState(getRandomEncouragement())
   const [editModalVisible, setEditModalVisible] = useState(false)
+  const [teacherModalVisible, setTeacherModalVisible] = useState(false)
   const [editType, setEditType] = useState<'childInfo' | 'textbook'>('childInfo')
   const [, forceUpdate] = useState({})
 
@@ -83,16 +86,7 @@ const ParentPage: React.FC = () => {
     } else if (label === '教材设置') {
       openEditModal('textbook')
     } else if (label === '老师布置') {
-      Taro.showActionSheet({
-        itemList: ['添加老师布置的谱子', '查看已有谱子'],
-        success: (res) => {
-          if (res.tapIndex === 0) {
-            Taro.showToast({ title: '请选择谱子文件', icon: 'none' })
-          } else {
-            Taro.showToast({ title: '暂无老师布置的谱子', icon: 'none' })
-          }
-        }
-      })
+      setTeacherModalVisible(true)
     } else {
       Taro.showToast({
         title: `${label}设置`,
@@ -309,7 +303,9 @@ const ParentPage: React.FC = () => {
           <View className={styles.settingItem} onClick={() => handleSettingClick('老师布置')}>
             <Text className={styles.settingIcon}>📝</Text>
             <Text className={styles.settingLabel}>老师布置的谱子</Text>
-            <Text className={styles.settingValue}>管理</Text>
+            <Text className={styles.settingValue}>
+              {teacherTasks.length > 0 ? `${teacherTasks.length}个` : '暂无'}
+            </Text>
             <Text className={styles.settingArrow}>›</Text>
           </View>
           <View className={styles.settingItem} onClick={() => handleSettingClick('亲子模式')}>
@@ -334,6 +330,11 @@ const ParentPage: React.FC = () => {
         initialData={childInfo}
         onClose={() => setEditModalVisible(false)}
         onSave={handleSaveChildInfo}
+      />
+
+      <TeacherTaskModal
+        visible={teacherModalVisible}
+        onClose={() => setTeacherModalVisible(false)}
       />
     </ScrollView>
   )

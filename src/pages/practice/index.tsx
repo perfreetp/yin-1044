@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { View, Text } from '@tarojs/components'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { usePracticeStore } from '@/store/usePracticeStore'
-import { formatTime, getMostErrorType } from '@/utils'
+import { formatTime, getMostErrorType, getErrorTypeName } from '@/utils'
+import type { BarDetail, ErrorLocation, PracticeResult } from '@/types'
 import styles from './index.module.scss'
 
 type PracticeState = 'idle' | 'playing' | 'paused' | 'finished'
@@ -28,6 +29,9 @@ const PracticePage: React.FC = () => {
     speedMultiplier,
     consecutiveFailures,
     isReducedSection,
+    reducedStartBar,
+    reducedEndBar,
+    noteTimings,
     startPractice,
     nextNote,
     recordError,
@@ -58,24 +62,55 @@ const PracticePage: React.FC = () => {
   const [resultMostError, setResultMostError] = useState('')
   const [resultIsIndependent, setResultIsIndependent] = useState(true)
   const [resultHelpCount, setResultHelpCount] = useState(0)
+  const [resultBarDetails, setResultBarDetails] = useState<BarDetail[]>([])
+  const [resultNextSuggestion, setResultNextSuggestion] = useState('')
+  const [resultPracticedBars, setResultPracticedBars] = useState('')
+  const [resultFinalSpeed, setResultFinalSpeed] = useState(1)
+  const [resultWasReduced, setResultWasReduced] = useState(false)
 
   const timerRef = useRef<number | null>(null)
 
   const task = currentTask
-  const totalNotes = task ? task.barsCount * 4 : 32
-  const notes: NotePosition[] = []
-  for (let i = 0; i < totalNotes; i++) {
-    notes.push({
-      x: 60 + i * 22,
-      y: 40 + Math.sin(i * 0.8) * 30,
-      index: i,
-      expectedTiming: i * (600 / speedMultiplier)
-    })
-  }
+
+  const effectiveBarsCount = useMemo(() => {
+    if (!task) return 8
+    if (isReducedSection) {
+      return reducedEndBar - reducedStartBar + 1
+    }
+    return task.barsCount
+  }, [task, isReducedSection, reducedStartBar, reducedEndBar])
+
+  const displayStartBar = useMemo(() => {
+    if (!task) return 1
+    if (isReducedSection) return reducedStartBar
+    return task.startBar
+  }, [task, isReducedSection, reducedStartBar])
+
+  const displayEndBar = useMemo(() => {
+    if (!task) return 8
+    if (isReducedSection) return reducedEndBar
+    return task.endBar
+  }, [task, isReducedSection, reducedEndBar])
+
+  const totalNotes = effectiveBarsCount * 4
+
+  const notes: NotePosition[] = useMemo(() => {
+    const result: NotePosition[] = []
+    const timings = noteTimings.length > 0 ? noteTimings : Array.from({ length: totalNotes }, (_, i) => i * (600 / speedMultiplier))
+    for (let i = 0; i < Math.min(totalNotes, timings.length); i++) {
+      result.push({
+        x: 60 + i * 22,
+        y: 40 + Math.sin(i * 0.8) * 30,
+        index: i,
+        expectedTiming: timings[i]
+      })
+    }
+    return result
+  }, [totalNotes, noteTimings, speedMultiplier])
 
   const currentNoteIndex = storeCurrentNote
-  const currentBar = Math.floor(currentNoteIndex / 4) + 1
-  const totalBars = task ? task.barsCount : 8
+  const currentBar = displayStartBar + Math.floor(currentNoteIndex / 4)
+  const totalBars = effectiveBarsCount
   const progress = (currentNoteIndex / totalNotes) * 100
   const combo = storeCombo
   const maxCombo = storeMaxCombo
@@ -132,8 +167,9 @@ const PracticePage: React.FC = () => {
   const handleError = (type: 'wrongNote' | 'wrongRhythm', message: string) => {
     const newConsecutiveFailures = consecutiveFailures + 1
     const newSpeed = Math.max(0.5, speedMultiplier - 0.1)
+    const barIndex = Math.floor(currentNoteIndex / 4)
 
-    recordError(type)
+    recordError(type, currentNoteIndex, barIndex)
     setLastErrorNoteIndex(currentNoteIndex)
     setErrorTipType(type)
     setErrorTipText(message)
@@ -147,6 +183,8 @@ const PracticePage: React.FC = () => {
     console.log('[Practice] Error:', {
       type,
       message,
+      noteIndex: currentNoteIndex,
+      barIndex,
       consecutiveFailures: newConsecutiveFailures,
       currentSpeed: speedMultiplier
     })
@@ -184,7 +222,7 @@ const PracticePage: React.FC = () => {
   }
 
   const doRequestHelp = () => {
-    requestHelp()
+    requestHelp(currentNoteIndex)
     Taro.showToast({
       title: '提示：看清楚下一个音的位置',
       icon: 'none',
@@ -218,6 +256,11 @@ const PracticePage: React.FC = () => {
     setResultMostError(getMostErrorType(result.errorTypes))
     setResultIsIndependent(result.isIndependent)
     setResultHelpCount(result.helpCount)
+    setResultBarDetails(result.barDetails || [])
+    setResultNextSuggestion(result.nextPracticeSuggestion || '')
+    setResultPracticedBars(result.practicedBars || '')
+    setResultFinalSpeed(result.finalSpeed || 1)
+    setResultWasReduced(result.wasReducedSection || false)
 
     console.log('[Practice] Finished with real data:', {
       accuracy: result.accuracy,
@@ -227,7 +270,9 @@ const PracticePage: React.FC = () => {
       errorTypes: result.errorTypes,
       isIndependent: result.isIndependent,
       helpCount: result.helpCount,
-      mostError: getMostErrorType(result.errorTypes)
+      mostError: getMostErrorType(result.errorTypes),
+      barDetails: result.barDetails,
+      nextSuggestion: result.nextPracticeSuggestion
     })
   }
 
@@ -300,7 +345,7 @@ const PracticePage: React.FC = () => {
 
   if (practiceState === 'finished') {
     return (
-      <View className={styles.page}>
+      <ScrollView scrollY className={styles.page}>
         <View className={styles.finishSection}>
           <View className={styles.resultCard}>
             <View className={styles.resultTitle}>
@@ -316,6 +361,25 @@ const PracticePage: React.FC = () => {
                   ⭐
                 </Text>
               ))}
+            </View>
+
+            <View className={styles.practiceInfoBar}>
+              <View className={styles.practiceInfoItem}>
+                <Text className={styles.practiceInfoLabel}>练习段落</Text>
+                <Text className={styles.practiceInfoValue}>{resultPracticedBars || `${displayStartBar}-${displayEndBar}小节`}</Text>
+              </View>
+              {resultFinalSpeed < 1 && (
+                <View className={styles.practiceInfoItem}>
+                  <Text className={styles.practiceInfoLabel}>最终速度</Text>
+                  <Text className={styles.practiceInfoValue}>🔽 {Math.round(resultFinalSpeed * 100)}%</Text>
+                </View>
+              )}
+              {resultWasReduced && (
+                <View className={styles.practiceInfoItem}>
+                  <Text className={styles.practiceInfoLabel}>段落调整</Text>
+                  <Text className={styles.practiceInfoValue}>✂️ 已缩短</Text>
+                </View>
+              )}
             </View>
 
             <View className={styles.resultStats}>
@@ -368,6 +432,58 @@ const PracticePage: React.FC = () => {
                 <Text className={styles.mostErrorValue}>{resultMostError}</Text>
               </View>
             </View>
+
+            {resultBarDetails.length > 0 && (
+              <View className={styles.barReviewSection}>
+                <View className={styles.sectionTitle}>
+                  <Text>📊 小节复盘</Text>
+                </View>
+                <View className={styles.barReviewGrid}>
+                  {resultBarDetails.map((bar) => {
+                    const barNumber = displayStartBar + bar.barIndex
+                    const hasErrors = bar.errors.length > 0
+                    const hasHelp = bar.helpRequested
+                    const errorTypes = [...new Set(bar.errors.map(e => e.type))]
+
+                    return (
+                      <View
+                        key={bar.barIndex}
+                        className={`${styles.barReviewItem} ${hasErrors ? styles.hasErrors : ''} ${hasHelp ? styles.hasHelp : ''}`}
+                      >
+                        <Text className={styles.barNumber}>第{barNumber}小节</Text>
+                        {hasErrors ? (
+                          <View className={styles.barErrors}>
+                            {errorTypes.map((type, idx) => (
+                              <Text key={idx} className={`${styles.barErrorTag} ${styles[type]}`}>
+                                {type === 'wrongNote' ? '🎵' : type === 'wrongRhythm' ? '⏰' : type === 'pause' ? '⏸️' : '🤲'}
+                                {bar.errors.filter(e => e.type === type).length}
+                              </Text>
+                            ))}
+                            {hasHelp && (
+                              <Text className={styles.barHelpTag}>💡求助</Text>
+                            )}
+                          </View>
+                        ) : hasHelp ? (
+                          <Text className={styles.barHelpTag}>💡求助过</Text>
+                        ) : (
+                          <Text className={styles.barPerfect}>✓ 完美</Text>
+                        )}
+                      </View>
+                    )
+                  })}
+                </View>
+              </View>
+            )}
+
+            {resultNextSuggestion && (
+              <View className={styles.suggestionSection}>
+                <View className={styles.suggestionIcon}>🎯</View>
+                <View className={styles.suggestionContent}>
+                  <Text className={styles.suggestionLabel}>下次练习建议</Text>
+                  <Text className={styles.suggestionText}>{resultNextSuggestion}</Text>
+                </View>
+              </View>
+            )}
 
             <View className={styles.independentSection}>
               {resultIsIndependent ? (

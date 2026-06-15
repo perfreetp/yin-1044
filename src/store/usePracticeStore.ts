@@ -1,9 +1,9 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import Taro from '@tarojs/taro'
-import type { ChildInfo, PracticeTask, PracticeResult, PracticeStatus, ErrorTypeStats, DailyStats } from '@/types'
+import type { ChildInfo, PracticeTask, PracticeResult, PracticeStatus, ErrorTypeStats, DailyStats, ErrorLocation, BarDetail } from '@/types'
 import { mockChildInfo, mockFocusList, textbookOptions } from '@/data/mockData'
-import { calculateStars, generateImprovedPoints, getRandomEncouragement, getMostErrorType } from '@/utils'
+import { calculateStars, generateImprovedPoints, getRandomEncouragement, getMostErrorType, getErrorTypeName } from '@/utils'
 
 interface PracticeState {
   childInfo: ChildInfo
@@ -16,8 +16,11 @@ interface PracticeState {
   maxCombo: number
   errorCount: number
   errorTypes: ErrorTypeStats
+  errorLocations: ErrorLocation[]
+  barDetails: BarDetail[]
   isIndependent: boolean
   helpCount: number
+  helpLocations: number[]
   speedMultiplier: number
   consecutiveFailures: number
   practiceResults: PracticeResult[]
@@ -27,23 +30,28 @@ interface PracticeState {
   lastPracticeDate: string | null
   dailyStats: DailyStats[]
   isReducedSection: boolean
+  originalBarsCount: number
+  reducedStartBar: number
+  reducedEndBar: number
+  noteTimings: number[]
 
   setCurrentTask: (task: PracticeTask) => void
   setPracticeStatus: (status: PracticeStatus) => void
   startPractice: () => void
   nextNote: () => void
-  recordError: (type: keyof ErrorTypeStats) => void
+  recordError: (type: keyof ErrorTypeStats, noteIndex: number, barIndex: number) => void
   addCombo: () => void
   resetBar: (fromNoteIndex: number) => void
-  requestHelp: () => void
+  requestHelp: (noteIndex: number) => void
   finishPractice: (duration: number) => PracticeResult
   decreaseSpeed: () => void
   reduceSection: () => void
   resetPractice: () => void
   updateChildInfo: (info: Partial<ChildInfo>) => void
   generateTodayTasks: () => void
-  addTeacherTask: (task: PracticeTask) => void
+  addTeacherTask: (task: Partial<PracticeTask>) => void
   removeTeacherTask: (taskId: string) => void
+  moveTeacherTask: (taskId: string, direction: 'up' | 'down') => void
   getParentStats: () => {
     totalPracticeDays: number
     streakDays: number
@@ -56,7 +64,7 @@ interface PracticeState {
   }
 }
 
-const generateTaskForChild = (child: ChildInfo, index: number, isTeacher: boolean): PracticeTask => {
+const generateTaskForChild = (child: ChildInfo, index: number, isTeacher: boolean, priority?: number): PracticeTask => {
   const ageFactor = Math.min(2, Math.max(1, child.age / 6))
   const yearFactor = Math.min(3, Math.max(1, child.studyYears + 1))
   const difficulty = Math.round((ageFactor + yearFactor) / 2)
@@ -89,8 +97,11 @@ const generateTaskForChild = (child: ChildInfo, index: number, isTeacher: boolea
     duration: Math.min(300, duration),
     difficulty,
     barsCount,
+    startBar,
+    endBar,
     focus,
     isTeacherTask: isTeacher,
+    priority: priority ?? (isTeacher ? index : 999),
     description: getTaskDescription(focus.type, difficulty)
   }
 }
@@ -103,6 +114,57 @@ const getTaskDescription = (focusType: string, difficulty: number): string => {
   }
   const list = descriptions[focusType] || descriptions.rhythm
   return list[Math.min(difficulty - 1, list.length - 1)]
+}
+
+const generateNextPracticeSuggestion = (
+  barDetails: BarDetail[],
+  startBar: number,
+  endBar: number
+): string => {
+  if (barDetails.length === 0) {
+    return `下次练习第${startBar}-${Math.min(startBar + 1, endBar)}小节`
+  }
+
+  const errorBars = barDetails.filter(b => b.errors.length > 0)
+  if (errorBars.length === 0) {
+    const nextStart = endBar + 1
+    return `太棒了！下次练习第${nextStart}-${nextStart + 1}小节`
+  }
+
+  errorBars.sort((a, b) => b.errors.length - a.errors.length)
+  const worstBar = errorBars[0].barIndex + startBar
+  const suggestStart = Math.max(startBar, worstBar - 1)
+  const suggestEnd = Math.min(endBar, worstBar)
+
+  if (suggestStart === suggestEnd) {
+    return `建议下次重点练习第${suggestStart}小节，这里错了${errorBars[0].errors.length}次`
+  }
+  return `建议下次练习第${suggestStart}-${suggestEnd}小节，这里错误最多`
+}
+
+const generateBarDetails = (
+  totalBars: number,
+  errorLocations: ErrorLocation[],
+  helpLocations: number[]
+): BarDetail[] => {
+  const barDetails: BarDetail[] = []
+
+  for (let i = 0; i < totalBars; i++) {
+    const barErrors = errorLocations.filter(e => e.barIndex === i)
+    const hasHelp = helpLocations.some(h => Math.floor(h / 4) === i)
+    const noteCount = 4
+    const correctCount = noteCount - barErrors.filter(e => e.type !== 'help').length
+
+    barDetails.push({
+      barIndex: i,
+      errors: barErrors,
+      helpRequested: hasHelp,
+      noteCount,
+      correctCount: Math.max(0, correctCount)
+    })
+  }
+
+  return barDetails
 }
 
 const storage = {
@@ -148,8 +210,11 @@ export const usePracticeStore = create<PracticeState>()(
         pause: 0,
         handSwitch: 0
       },
+      errorLocations: [],
+      barDetails: [],
       isIndependent: true,
       helpCount: 0,
+      helpLocations: [],
       speedMultiplier: 1,
       consecutiveFailures: 0,
       practiceResults: [],
@@ -159,25 +224,57 @@ export const usePracticeStore = create<PracticeState>()(
       lastPracticeDate: null,
       dailyStats: [],
       isReducedSection: false,
+      originalBarsCount: 0,
+      reducedStartBar: 0,
+      reducedEndBar: 0,
+      noteTimings: [],
 
-      setCurrentTask: (task) => set({ currentTask: task }),
+      setCurrentTask: (task) => {
+        const timings: number[] = []
+        const totalNotes = task.barsCount * 4
+        for (let i = 0; i < totalNotes; i++) {
+          timings.push(i * 600)
+        }
+        set({
+          currentTask: task,
+          originalBarsCount: task.barsCount,
+          reducedStartBar: task.startBar,
+          reducedEndBar: task.endBar,
+          noteTimings: timings
+        })
+      },
 
       setPracticeStatus: (status) => set({ practiceStatus: status }),
 
-      startPractice: () => set({
-        practiceStatus: 'playing',
-        currentBar: 0,
-        currentNote: 0,
-        combo: 0,
-        maxCombo: 0,
-        errorCount: 0,
-        errorTypes: { wrongNote: 0, wrongRhythm: 0, pause: 0, handSwitch: 0 },
-        isIndependent: true,
-        helpCount: 0,
-        consecutiveFailures: 0,
-        speedMultiplier: 1,
-        isReducedSection: false
-      }),
+      startPractice: () => {
+        const task = get().currentTask
+        const timings: number[] = []
+        const totalNotes = (task?.barsCount || 8) * 4
+        for (let i = 0; i < totalNotes; i++) {
+          timings.push(i * 600)
+        }
+        set({
+          practiceStatus: 'playing',
+          currentBar: 0,
+          currentNote: 0,
+          combo: 0,
+          maxCombo: 0,
+          errorCount: 0,
+          errorTypes: { wrongNote: 0, wrongRhythm: 0, pause: 0, handSwitch: 0 },
+          errorLocations: [],
+          barDetails: [],
+          isIndependent: true,
+          helpCount: 0,
+          helpLocations: [],
+          consecutiveFailures: 0,
+          speedMultiplier: 1,
+          isReducedSection: false,
+          originalBarsCount: task?.barsCount || 8,
+          reducedStartBar: task?.startBar || 1,
+          reducedEndBar: task?.endBar || 8,
+          noteTimings: timings
+        })
+      },
 
       nextNote: () => set((state) => {
         const newNote = state.currentNote + 1
@@ -185,16 +282,23 @@ export const usePracticeStore = create<PracticeState>()(
         return { currentNote: newNote, currentBar: newBar }
       }),
 
-      recordError: (type) => set((state) => {
+      recordError: (type, noteIndex, barIndex) => set((state) => {
         const newErrorTypes = {
           ...state.errorTypes,
           [type]: state.errorTypes[type] + 1
+        }
+        const newErrorLocation: ErrorLocation = {
+          noteIndex,
+          barIndex,
+          type,
+          timestamp: Date.now()
         }
         return {
           errorCount: state.errorCount + 1,
           combo: 0,
           consecutiveFailures: state.consecutiveFailures + 1,
-          errorTypes: newErrorTypes
+          errorTypes: newErrorTypes,
+          errorLocations: [...state.errorLocations, newErrorLocation]
         }
       }),
 
@@ -217,10 +321,64 @@ export const usePracticeStore = create<PracticeState>()(
         }
       }),
 
-      requestHelp: () => set((state) => ({
-        helpCount: state.helpCount + 1,
-        isIndependent: false
-      })),
+      requestHelp: (noteIndex) => set((state) => {
+        const barIndex = Math.floor(noteIndex / 4)
+        const newErrorLocation: ErrorLocation = {
+          noteIndex,
+          barIndex,
+          type: 'help',
+          timestamp: Date.now()
+        }
+        return {
+          helpCount: state.helpCount + 1,
+          helpLocations: [...state.helpLocations, noteIndex],
+          isIndependent: false,
+          errorLocations: [...state.errorLocations, newErrorLocation]
+        }
+      }),
+
+      decreaseSpeed: () => set((state) => {
+        const newSpeed = Math.max(0.5, state.speedMultiplier - 0.1)
+        const newTimings = state.noteTimings.map((_, i) => i * (600 / newSpeed))
+        console.log('[Practice] Speed decreased to:', newSpeed)
+        return {
+          speedMultiplier: newSpeed,
+          noteTimings: newTimings
+        }
+      }),
+
+      reduceSection: () => set((state) => {
+        const task = state.currentTask
+        if (!task) return { isReducedSection: true }
+
+        const totalBars = task.barsCount
+        const currentBar = state.currentBar
+        const newBarsCount = Math.min(4, Math.max(2, Math.ceil(totalBars / 2)))
+        const newStartBar = Math.max(0, currentBar - 1)
+        const newEndBar = Math.min(totalBars - 1, newStartBar + newBarsCount - 1)
+        const actualStartBar = Math.max(task.startBar, task.startBar + newStartBar)
+        const actualEndBar = Math.min(task.endBar, task.startBar + newEndBar)
+
+        const newTimings: number[] = []
+        const totalNotes = newBarsCount * 4
+        for (let i = 0; i < totalNotes; i++) {
+          newTimings.push(i * (600 / state.speedMultiplier))
+        }
+
+        console.log('[Practice] Section reduced:', {
+          original: `${task.startBar}-${task.endBar}`,
+          reduced: `${actualStartBar}-${actualEndBar}`,
+          barsCount: newBarsCount
+        })
+
+        return {
+          isReducedSection: true,
+          reducedStartBar: actualStartBar,
+          reducedEndBar: actualEndBar,
+          originalBarsCount: task.barsCount,
+          noteTimings: newTimings
+        }
+      }),
 
       finishPractice: (duration) => {
         const state = get()
@@ -229,7 +387,10 @@ export const usePracticeStore = create<PracticeState>()(
           return {} as PracticeResult
         }
 
-        const totalNotes = task.barsCount * 4
+        const effectiveBarsCount = state.isReducedSection
+          ? (state.reducedEndBar - state.reducedStartBar + 1)
+          : task.barsCount
+        const totalNotes = effectiveBarsCount * 4
         const accuracy = Math.max(0, Math.round(((totalNotes - state.errorCount) / totalNotes) * 100))
 
         const totalRhythmErrors = state.errorTypes.wrongRhythm + state.errorTypes.pause
@@ -239,8 +400,16 @@ export const usePracticeStore = create<PracticeState>()(
         const improvedPoints = generateImprovedPoints(accuracy, state.maxCombo)
         const encouragement = getRandomEncouragement()
 
+        const startBar = state.isReducedSection ? state.reducedStartBar : task.startBar
+        const endBar = state.isReducedSection ? state.reducedEndBar : task.endBar
+        const practicedBars = `${startBar}-${endBar}小节`
+
+        const barDetails = generateBarDetails(effectiveBarsCount, state.errorLocations, state.helpLocations)
+        const nextPracticeSuggestion = generateNextPracticeSuggestion(barDetails, startBar, endBar)
+
         const result: PracticeResult = {
           taskId: task.id,
+          taskTitle: task.title,
           stars,
           combo: state.combo,
           maxCombo: state.maxCombo,
@@ -252,7 +421,13 @@ export const usePracticeStore = create<PracticeState>()(
           helpCount: state.helpCount,
           improvedPoints,
           encouragement,
-          date: new Date().toISOString().split('T')[0]
+          date: new Date().toISOString().split('T')[0],
+          barDetails,
+          errorLocations: [...state.errorLocations],
+          nextPracticeSuggestion,
+          practicedBars,
+          finalSpeed: state.speedMultiplier,
+          wasReducedSection: state.isReducedSection
         }
 
         const today = new Date().toISOString().split('T')[0]
@@ -310,14 +485,6 @@ export const usePracticeStore = create<PracticeState>()(
         return result
       },
 
-      decreaseSpeed: () => set((state) => {
-        const newSpeed = Math.max(0.5, state.speedMultiplier - 0.1)
-        console.log('[Practice] Speed decreased to:', newSpeed)
-        return { speedMultiplier: newSpeed }
-      }),
-
-      reduceSection: () => set({ isReducedSection: true }),
-
       resetPractice: () => set({
         practiceStatus: 'idle',
         currentBar: 0,
@@ -341,9 +508,21 @@ export const usePracticeStore = create<PracticeState>()(
         const child = state.childInfo
         const teacherTasks = state.teacherTasks
 
-        const totalDuration = teacherTasks.reduce((sum, t) => sum + t.duration, 0)
+        const sortedTeacherTasks = [...teacherTasks].sort((a, b) => a.priority - b.priority)
+
+        let totalDuration = sortedTeacherTasks.reduce((sum, t) => sum + t.duration, 0)
         const maxDuration = 300
-        const remainingDuration = maxDuration - totalDuration
+
+        const trimmedTeacherTasks: PracticeTask[] = []
+        for (const task of sortedTeacherTasks) {
+          if (totalDuration <= maxDuration) {
+            trimmedTeacherTasks.push(task)
+          } else {
+            break
+          }
+        }
+
+        const remainingDuration = maxDuration - trimmedTeacherTasks.reduce((sum, t) => sum + t.duration, 0)
 
         const normalTasks: PracticeTask[] = []
         let currentDuration = 0
@@ -358,17 +537,11 @@ export const usePracticeStore = create<PracticeState>()(
           taskIndex++
         }
 
-        const sortedTeacherTasks = [...teacherTasks].sort((a, b) => {
-          if (a.isTeacherTask && !b.isTeacherTask) return -1
-          if (!a.isTeacherTask && b.isTeacherTask) return 1
-          return 0
-        })
-
-        const allTasks = [...sortedTeacherTasks, ...normalTasks]
+        const allTasks = [...trimmedTeacherTasks, ...normalTasks]
 
         console.log('[Tasks] Generated today tasks:', {
           count: allTasks.length,
-          teacherCount: sortedTeacherTasks.length,
+          teacherCount: trimmedTeacherTasks.length,
           normalCount: normalTasks.length,
           totalDuration: allTasks.reduce((sum, t) => sum + t.duration, 0)
         })
@@ -380,14 +553,66 @@ export const usePracticeStore = create<PracticeState>()(
       },
 
       addTeacherTask: (task) => set((state) => {
-        const newTask = { ...task, isTeacherTask: true, id: `teacher_${Date.now()}` }
+        const child = state.childInfo
+        const priority = state.teacherTasks.length
+        const focus = mockFocusList[priority % mockFocusList.length]
+        const startBar = task.startBar || 1
+        const endBar = task.endBar || (startBar + (task.barsCount || 4) - 1)
+
+        const newTask: PracticeTask = {
+          id: `teacher_${Date.now()}`,
+          title: task.title || `${task.songName || '新曲目'} 第${startBar}-${endBar}小节`,
+          duration: task.duration || 90,
+          difficulty: task.difficulty || Math.round((child.age / 6 + child.studyYears + 1) / 2),
+          barsCount: task.barsCount || (endBar - startBar + 1),
+          startBar,
+          endBar,
+          focus,
+          isTeacherTask: true,
+          priority,
+          description: task.description || getTaskDescription(focus.type, Math.round((child.age / 6 + child.studyYears + 1) / 2))
+        }
+
         console.log('[Tasks] Teacher task added:', newTask)
-        return { teacherTasks: [...state.teacherTasks, newTask] }
+
+        const newTasks = [...state.teacherTasks, newTask].map((t, i) => ({
+          ...t,
+          priority: i
+        }))
+
+        return { teacherTasks: newTasks }
       }),
 
       removeTeacherTask: (taskId) => set((state) => {
-        const newTasks = state.teacherTasks.filter(t => t.id !== taskId)
+        const newTasks = state.teacherTasks
+          .filter(t => t.id !== taskId)
+          .map((t, i) => ({ ...t, priority: i }))
         console.log('[Tasks] Teacher task removed:', taskId)
+        return { teacherTasks: newTasks }
+      }),
+
+      moveTeacherTask: (taskId, direction) => set((state) => {
+        const tasks = [...state.teacherTasks]
+        const index = tasks.findIndex(t => t.id === taskId)
+
+        if (index === -1) return state
+
+        const newIndex = direction === 'up' ? index - 1 : index + 1
+        if (newIndex < 0 || newIndex >= tasks.length) return state
+
+        const temp = tasks[index]
+        tasks[index] = tasks[newIndex]
+        tasks[newIndex] = temp
+
+        const newTasks = tasks.map((t, i) => ({ ...t, priority: i }))
+
+        console.log('[Tasks] Teacher task moved:', {
+          taskId,
+          direction,
+          from: index,
+          to: newIndex
+        })
+
         return { teacherTasks: newTasks }
       }),
 

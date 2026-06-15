@@ -18,20 +18,32 @@ export interface PracticeTask {
   duration: number
   difficulty: number
   barsCount: number
+  startBar: number
+  endBar: number
   focus: DailyFocus
   isTeacherTask: boolean
+  priority: number
   description: string
 }
 
-export interface Note {
-  pitch: string
-  duration: number
-  barIndex: number
+export interface ErrorLocation {
   noteIndex: number
+  barIndex: number
+  type: 'wrongNote' | 'wrongRhythm' | 'pause' | 'handSwitch' | 'help'
+  timestamp: number
+}
+
+export interface BarDetail {
+  barIndex: number
+  errors: ErrorLocation[]
+  helpRequested: boolean
+  noteCount: number
+  correctCount: number
 }
 
 export interface PracticeResult {
   taskId: string
+  taskTitle: string
   stars: number
   combo: number
   maxCombo: number
@@ -44,6 +56,19 @@ export interface PracticeResult {
   improvedPoints: string[]
   encouragement: string
   date: string
+  barDetails: BarDetail[]
+  errorLocations: ErrorLocation[]
+  nextPracticeSuggestion: string
+  practicedBars: string
+  finalSpeed: number
+  wasReducedSection: boolean
+}
+
+export interface Note {
+  pitch: string
+  duration: number
+  barIndex: number
+  noteIndex: number
 }
 
 export interface ErrorTypeStats {

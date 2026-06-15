@@ -15,8 +15,7 @@ const RewardPage: React.FC = () => {
     streakDays,
     totalStars,
     practiceResults,
-    dailyStats,
-    maxCombo
+    dailyStats
   } = usePracticeStore()
 
   const [encouragement, setEncouragement] = useState(getRandomEncouragement())
@@ -48,6 +47,9 @@ const RewardPage: React.FC = () => {
       : 0
     const threeStarCount = practiceResults.filter(r => r.stars === 3).length
     const practiceDays = [...new Set(practiceResults.map(r => r.date))].length
+    const historicalMaxCombo = practiceResults.length > 0
+      ? Math.max(...practiceResults.map(r => r.maxCombo))
+      : 0
 
     return mockBadges.map(badge => {
       let progress = 0
@@ -57,7 +59,7 @@ const RewardPage: React.FC = () => {
       switch (badge.type) {
         case 'combo':
           if (badge.id === 'b1') {
-            progress = maxCombo
+            progress = historicalMaxCombo
           } else if (badge.id === 'b6') {
             progress = threeStarCount
             target = 5
@@ -91,7 +93,7 @@ const RewardPage: React.FC = () => {
         unlocked
       }
     })
-  }, [practiceResults, maxCombo, streakDays])
+  }, [practiceResults, streakDays])
 
   const unlockedCount = useMemo(() => {
     return stickersWithStatus.filter(s => s.unlocked).length
@@ -241,8 +243,8 @@ const RewardPage: React.FC = () => {
           </View>
           <View className={styles.achievementItem}>
             <Text className={styles.achievementIcon}>🔥</Text>
-            <Text className={styles.achievementValue}>{maxCombo}</Text>
-            <Text className={styles.achievementLabel}>最高连击</Text>
+            <Text className={styles.achievementValue}>{latestResult?.maxCombo || 0}</Text>
+            <Text className={styles.achievementLabel}>本次连击</Text>
           </View>
         </View>
 
