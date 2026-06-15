@@ -1,0 +1,121 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  position: relative;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+  overflow: hidden;
+}
+
+.teacherBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: $gradient-primary;
+  padding: $spacing-xs $spacing-md;
+  border-bottom-left-radius: $radius-md;
+
+  .teacherText {
+    font-size: $font-size-xs;
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.focusIcon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-md;
+  background: rgba(255, 154, 60, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .icon {
+    font-size: 40rpx;
+  }
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.meta {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.metaText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.focus {
+  background: $color-bg-soft;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+
+  .focusLabel {
+    font-size: $font-size-sm;
+    color: $color-primary-dark;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.difficulty {
+  display: flex;
+  align-items: center;
+}
+
+.difficultyLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.difficultyStars {
+  font-size: $font-size-sm;
+}
+
+.startBtn {
+  background: $gradient-primary;
+  padding: $spacing-sm $spacing-xl;
+  border-radius: $radius-button;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+
+  .startText {
+    font-size: $font-size-md;
+    color: $color-text-white;
+    font-weight: $font-weight-semibold;
+  }
+}

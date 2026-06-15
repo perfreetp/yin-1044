@@ -1,0 +1,172 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.header {
+  padding: $spacing-xl $page-padding;
+  background: $gradient-primary;
+  color: $color-text-white;
+  border-radius: 0 0 $radius-xl $radius-xl;
+}
+
+.greeting {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.subGreeting {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+.statItem {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  text-align: center;
+
+  .statValue {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    display: block;
+    line-height: 1.2;
+  }
+
+  .statLabel {
+    font-size: $font-size-xs;
+    opacity: 0.9;
+  }
+}
+
+.content {
+  padding: $page-padding;
+  padding-top: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.focusCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+}
+
+.focusIconWrap {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: $radius-lg;
+  background: rgba(255, 154, 60, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.focusIcon {
+  font-size: 56rpx;
+}
+
+.focusInfo {
+  flex: 1;
+}
+
+.focusLabel {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.focusDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.taskSection {
+  margin-bottom: $spacing-lg;
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.tipCard {
+  background: linear-gradient(135deg, #E8F8F5 0%, #D1F2EB 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.tipTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-mint;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.tipText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.actionItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg $spacing-sm;
+  text-align: center;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.actionIcon {
+  font-size: 48rpx;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.actionLabel {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}

@@ -1,0 +1,45 @@
+// ============================================
+// 主题配色变量 - 琴童陪练小程序（温馨童趣风）
+// ============================================
+
+// 品牌主题色：温暖橙黄
+$color-primary: #FF9A3C;
+$color-primary-light: #FFB971;
+$color-primary-dark: #F57C00;
+
+// 辅助色
+$color-secondary-mint: #4ECDC4;
+$color-secondary-blue: #6C9EFF;
+
+// 奖励色
+$color-reward: #FF6B9D;
+$color-reward-light: #FFB3D0;
+
+// 功能色
+$color-success: #52C41A;
+$color-warning: #FAAD14;
+$color-error: #FF4D4F;
+$color-info: #6C9EFF;
+
+// 背景色
+$color-bg-page: #FFF7E6;
+$color-bg-card: #ffffff;
+$color-bg-hover: #FFF0D6;
+$color-bg-soft: #FFF9F0;
+
+// 文本色
+$color-text-primary: #2D3436;
+$color-text-secondary: #636E72;
+$color-text-tertiary: #B2BEC3;
+$color-text-disabled: #DFE6E9;
+$color-text-white: #ffffff;
+
+// 边框色
+$color-border: #FFE0B2;
+$color-divider: #FFF0D6;
+
+// 渐变
+$gradient-primary: linear-gradient(135deg, #FFB971 0%, #FF9A3C 100%);
+$gradient-reward: linear-gradient(135deg, #FFB3D0 0%, #FF6B9D 100%);
+$gradient-mint: linear-gradient(135deg, #7FDED8 0%, #4ECDC4 100%);
+$gradient-blue: linear-gradient(135deg, #9EC0FF 0%, #6C9EFF 100%);

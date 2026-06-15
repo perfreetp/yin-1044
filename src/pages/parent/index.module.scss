@@ -1,0 +1,342 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.header {
+  padding: $spacing-xl $page-padding;
+  background: $gradient-blue;
+  color: $color-text-white;
+  border-radius: 0 0 $radius-xl $radius-xl;
+}
+
+.title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.childInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+  padding: $spacing-md;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-lg;
+}
+
+.childAvatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+}
+
+.childDetail {
+  flex: 1;
+}
+
+.childName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  display: block;
+}
+
+.childDesc {
+  font-size: $font-size-xs;
+  opacity: 0.9;
+}
+
+.editBtn {
+  padding: $spacing-xs $spacing-md;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+}
+
+.content {
+  padding: $page-padding;
+  padding-top: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.section {
+  margin-bottom: $spacing-lg;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.statCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  text-align: center;
+
+  .statValue {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    color: $color-text-primary;
+    display: block;
+    line-height: 1.2;
+    margin-bottom: $spacing-xs;
+  }
+
+  .statLabel {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+  }
+
+  .statUnit {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    margin-left: 4rpx;
+  }
+}
+
+.primary {
+  .statValue {
+    color: $color-primary;
+  }
+}
+
+.success {
+  .statValue {
+    color: $color-success;
+  }
+}
+
+.reward {
+  .statValue {
+    color: $color-reward;
+  }
+}
+
+.blue {
+  .statValue {
+    color: $color-secondary-blue;
+  }
+}
+
+.weeklyCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.weekDays {
+  display: flex;
+  justify-content: space-between;
+  margin-top: $spacing-md;
+}
+
+.weekDay {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.weekDayLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.weekDayBar {
+  width: 40rpx;
+  height: 120rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-sm;
+  position: relative;
+  overflow: hidden;
+}
+
+.weekDayFill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $gradient-primary;
+  border-radius: $radius-sm;
+  transition: height $transition-base;
+}
+
+.today .weekDayFill {
+  background: $gradient-reward;
+}
+
+.weekDayValue {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.errorCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.errorList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  margin-top: $spacing-md;
+}
+
+.errorItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.errorIcon {
+  font-size: 36rpx;
+  width: 60rpx;
+  text-align: center;
+}
+
+.errorInfo {
+  flex: 1;
+}
+
+.errorName {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.errorBar {
+  height: 12rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.errorBarFill {
+  height: 100%;
+  background: $gradient-primary;
+  border-radius: $radius-round;
+}
+
+.errorCount {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  min-width: 60rpx;
+  text-align: right;
+}
+
+.settingsList {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+}
+
+.settingItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+  gap: $spacing-md;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.settingIcon {
+  font-size: 36rpx;
+  width: 60rpx;
+  text-align: center;
+}
+
+.settingLabel {
+  flex: 1;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.settingValue {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.settingArrow {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.encourageCard {
+  background: linear-gradient(135deg, #E6F7FF 0%, #BAE7FF 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+}
+
+.encourageTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary-blue;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.encourageText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  margin-bottom: $spacing-md;
+}
+
+.copyBtn {
+  display: inline-block;
+  padding: $spacing-sm $spacing-lg;
+  background: $color-secondary-blue;
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.9;
+  }
+}

@@ -1,0 +1,86 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &.unlocked {
+    border: 2rpx solid $color-success;
+    box-shadow: 0 4rpx 20rpx rgba(82, 196, 26, 0.2);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.iconWrap {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-md;
+  background: rgba(255, 154, 60, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .unlocked & {
+    background: rgba(82, 196, 26, 0.15);
+  }
+}
+
+.icon {
+  font-size: 36rpx;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.description {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  display: block;
+}
+
+.unlockedBadge {
+  background: $color-success;
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-xs;
+  flex-shrink: 0;
+
+  .unlockedText {
+    font-size: $font-size-xs;
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.progressWrap {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.progressText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  min-width: 70rpx;
+  text-align: right;
+  flex-shrink: 0;
+}

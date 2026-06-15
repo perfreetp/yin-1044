@@ -1,0 +1,69 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  gap: $spacing-md;
+}
+
+.iconWrap {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .primary & {
+    background: rgba(255, 154, 60, 0.15);
+  }
+
+  .success & {
+    background: rgba(82, 196, 26, 0.15);
+  }
+
+  .reward & {
+    background: rgba(255, 107, 157, 0.15);
+  }
+
+  .blue & {
+    background: rgba(108, 158, 255, 0.15);
+  }
+
+  .mint & {
+    background: rgba(78, 205, 196, 0.15);
+  }
+}
+
+.icon {
+  font-size: 44rpx;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.value {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1.2;
+}
+
+.label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.subtitle {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

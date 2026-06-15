@@ -1,0 +1,48 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.bar {
+  flex: 1;
+  border-radius: $radius-round;
+  background-color: $color-bg-hover;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: $radius-round;
+  transition: width $transition-base ease;
+}
+
+.primary .fill {
+  background: $gradient-primary;
+}
+
+.success .fill {
+  background-color: $color-success;
+}
+
+.reward .fill {
+  background: $gradient-reward;
+}
+
+.blue .fill {
+  background: $gradient-blue;
+}
+
+.mint .fill {
+  background: $gradient-mint;
+}
+
+.text {
+  margin-left: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  min-width: 60rpx;
+  text-align: right;
+}

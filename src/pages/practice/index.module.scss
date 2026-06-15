@@ -1,0 +1,523 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  background: $color-bg-card;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: $shadow-card;
+}
+
+.taskInfo {
+  flex: 1;
+}
+
+.taskTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.taskMeta {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.comboDisplay {
+  text-align: center;
+  padding: 0 $spacing-md;
+
+  .comboNum {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $color-reward;
+    display: block;
+    line-height: 1;
+  }
+
+  .comboLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+  }
+}
+
+.timerDisplay {
+  text-align: right;
+  min-width: 100rpx;
+
+  .timerNum {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-primary;
+  }
+}
+
+.staffSection {
+  flex: 1;
+  padding: $spacing-xl $page-padding;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.staffContainer {
+  width: 100%;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+  position: relative;
+  overflow: hidden;
+}
+
+.staffLines {
+  position: relative;
+  height: 200rpx;
+  margin-bottom: $spacing-lg;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2rpx;
+    background: $color-border;
+  }
+
+  &::before {
+    top: 0;
+    box-shadow:
+      0 48rpx 0 0 $color-border,
+      0 96rpx 0 0 $color-border,
+      0 144rpx 0 0 $color-border,
+      0 198rpx 0 0 $color-border;
+  }
+
+  &::after {
+    display: none;
+  }
+}
+
+.notesContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 $spacing-lg;
+}
+
+.note {
+  width: 40rpx;
+  height: 32rpx;
+  background: $color-text-primary;
+  border-radius: 50%;
+  position: absolute;
+  transition: all $transition-fast;
+
+  &.current {
+    background: $color-primary;
+    transform: scale(1.3);
+    box-shadow: 0 0 20rpx rgba(255, 154, 60, 0.6);
+  }
+
+  &.correct {
+    background: $color-success;
+  }
+
+  &.wrong {
+    background: $color-error;
+    animation: shake 0.3s ease;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8rpx); }
+  75% { transform: translateX(8rpx); }
+}
+
+.progressBar {
+  width: 100%;
+  height: 12rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-round;
+  overflow: hidden;
+  margin-bottom: $spacing-md;
+}
+
+.progressFill {
+  height: 100%;
+  background: $gradient-primary;
+  border-radius: $radius-round;
+  transition: width $transition-base;
+}
+
+.barIndicator {
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.errorTip {
+  position: absolute;
+  top: $spacing-lg;
+  left: 50%;
+  transform: translateX(-50%);
+  background: $color-error;
+  color: $color-text-white;
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  animation: fadeInDown 0.3s ease;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.comboTip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80rpx;
+  font-weight: $font-weight-bold;
+  color: $color-reward;
+  text-shadow: 0 4rpx 20rpx rgba(255, 107, 157, 0.4);
+  animation: comboPop 0.5s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+
+@keyframes comboPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.focusTip {
+  text-align: center;
+  margin-bottom: $spacing-md;
+
+  .focusIcon {
+    font-size: 48rpx;
+    margin-right: $spacing-sm;
+  }
+
+  .focusText {
+    font-size: $font-size-md;
+    color: $color-primary-dark;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.controls {
+  padding: $spacing-xl $page-padding;
+  background: $color-bg-card;
+  border-top: 1rpx solid $color-divider;
+}
+
+.mainButtons {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.btn {
+  flex: 1;
+  height: $button-height-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+}
+
+.btnPrimary {
+  background: $gradient-primary;
+  color: $color-text-white;
+}
+
+.btnSecondary {
+  background: $color-bg-soft;
+  color: $color-primary-dark;
+}
+
+.btnSuccess {
+  background: $color-success;
+  color: $color-text-white;
+}
+
+.secondaryButtons {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.smallBtn {
+  flex: 1;
+  height: $button-height-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  background: $color-bg-soft;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  transition: all $transition-base;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+
+  .btnIcon {
+    font-size: 28rpx;
+  }
+}
+
+.speedBadge {
+  position: absolute;
+  top: $spacing-md;
+  right: $spacing-md;
+  background: rgba(255, 107, 157, 0.15);
+  color: $color-reward;
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.idleSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $page-padding;
+}
+
+.bigIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-xl;
+}
+
+.idleTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  text-align: center;
+}
+
+.idleDesc {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: $spacing-xl;
+}
+
+.startBigBtn {
+  width: 240rpx;
+  height: 240rpx;
+  border-radius: 50%;
+  background: $gradient-primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(255, 154, 60, 0.4);
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .startText {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $color-text-white;
+  }
+}
+
+.finishSection {
+  flex: 1;
+  padding: $page-padding;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resultCard {
+  width: 100%;
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+  text-align: center;
+  margin-bottom: $spacing-lg;
+}
+
+.resultTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+}
+
+.starsBig {
+  font-size: 72rpx;
+  margin-bottom: $spacing-lg;
+
+  .star {
+    margin: 0 8rpx;
+
+    &.empty {
+      opacity: 0.2;
+      filter: grayscale(100%);
+    }
+  }
+}
+
+.resultStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.resultStat {
+  text-align: center;
+
+  .statValue {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $color-primary;
+    display: block;
+    line-height: 1.2;
+  }
+
+  .statLabel {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+  }
+}
+
+.improvedSection {
+  text-align: left;
+  background: $color-bg-soft;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.improvedTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-success;
+  margin-bottom: $spacing-sm;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.improvedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.improvedItem {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.8;
+  padding-left: $spacing-md;
+  position: relative;
+
+  &::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: $color-success;
+    font-weight: $font-weight-bold;
+  }
+}
+
+.encouragementBox {
+  background: linear-gradient(135deg, #FFF0F5 0%, #FFE4EC 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  text-align: center;
+  margin-bottom: $spacing-lg;
+
+  .encourageText {
+    font-size: $font-size-md;
+    color: $color-reward;
+    font-weight: $font-weight-medium;
+    line-height: 1.6;
+  }
+
+  .encourageIcon {
+    font-size: 36rpx;
+    margin-bottom: $spacing-sm;
+    display: block;
+  }
+}
+
+.parentModeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  background: rgba(78, 205, 196, 0.15);
+  color: $color-secondary-mint;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-button;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-md;
+}

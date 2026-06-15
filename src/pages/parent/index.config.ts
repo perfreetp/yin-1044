@@ -1,0 +1,4 @@
+export default definePageConfig({
+  navigationBarTitleText: '家长中心',
+  enablePullDownRefresh: false
+})

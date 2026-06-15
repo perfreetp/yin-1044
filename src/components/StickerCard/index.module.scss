@@ -1,0 +1,61 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &.sm {
+    padding: $spacing-sm;
+  }
+
+  &.locked {
+    opacity: 0.5;
+    filter: grayscale(50%);
+  }
+}
+
+.iconWrap {
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $spacing-sm;
+
+  .sm & {
+    width: 60rpx;
+    height: 60rpx;
+    margin-bottom: $spacing-xs;
+  }
+}
+
+.icon {
+  font-size: 48rpx;
+
+  .sm & {
+    font-size: 36rpx;
+  }
+}
+
+.name {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  text-align: center;
+
+  .sm & {
+    font-size: $font-size-xs;
+  }
+}
+
+.require {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}

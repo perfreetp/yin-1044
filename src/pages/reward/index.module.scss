@@ -1,0 +1,214 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: 120rpx;
+}
+
+.header {
+  padding: $spacing-xl $page-padding;
+  background: $gradient-reward;
+  color: $color-text-white;
+  border-radius: 0 0 $radius-xl $radius-xl;
+}
+
+.title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  display: block;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+.statItem {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  text-align: center;
+
+  .statValue {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    display: block;
+    line-height: 1.2;
+  }
+
+  .statLabel {
+    font-size: $font-size-xs;
+    opacity: 0.9;
+  }
+}
+
+.content {
+  padding: $page-padding;
+  padding-top: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.section {
+  margin-bottom: $spacing-lg;
+}
+
+.stickerGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-md;
+}
+
+.badgeList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.calendarSection {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.calendarTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: $spacing-sm;
+}
+
+.calendarDay {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-md;
+  font-size: $font-size-xs;
+
+  &.weekday {
+    color: $color-text-tertiary;
+    font-weight: $font-weight-medium;
+  }
+
+  &.completed {
+    background: rgba(82, 196, 26, 0.15);
+    color: $color-success;
+    font-weight: $font-weight-semibold;
+
+    .dayIcon {
+      font-size: 24rpx;
+    }
+  }
+
+  &.today {
+    background: $gradient-primary;
+    color: $color-text-white;
+    font-weight: $font-weight-semibold;
+  }
+
+  &.empty {
+    visibility: hidden;
+  }
+}
+
+.dayNum {
+  font-size: $font-size-sm;
+  line-height: 1.2;
+}
+
+.dayIcon {
+  font-size: 20rpx;
+  margin-top: 2rpx;
+}
+
+.encouragementCard {
+  background: linear-gradient(135deg, #FFF0F5 0%, #FFE4EC 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+  text-align: center;
+}
+
+.encouragementIcon {
+  font-size: 64rpx;
+  display: block;
+  margin-bottom: $spacing-md;
+}
+
+.encouragementText {
+  font-size: $font-size-md;
+  color: $color-reward;
+  font-weight: $font-weight-semibold;
+  line-height: 1.6;
+}
+
+.progressCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.progressTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.progressItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.progressLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.progressValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}

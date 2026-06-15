@@ -1,0 +1,39 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.star {
+  display: inline-block;
+  line-height: 1;
+
+  &.sm {
+    font-size: 28rpx;
+  }
+
+  &.md {
+    font-size: 40rpx;
+  }
+
+  &.lg {
+    font-size: 64rpx;
+  }
+}
+
+.filled {
+  filter: none;
+}
+
+.empty {
+  filter: grayscale(100%);
+  opacity: 0.3;
+}
+
+.text {
+  margin-left: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
